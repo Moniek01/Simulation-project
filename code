@@ -1,0 +1,46 @@
+from controller import Robot
+robot = Robot()
+
+timestep = int(robot.getBasicTimeStep())
+maxSpeed = 8.72    # Max possible speed for the motor of the robot.
+
+# Initialize the gyro sensor
+gyro = robot.getGyro("body gyro")
+gyro.enable(timestep)
+
+# Configuration of the main motor of the robot.
+pitchMotor = robot.getMotor("body pitch motor")
+pitchMotor.setPosition(float('inf'))
+pitchMotor.setVelocity(0.0)
+
+# Configuration of the body yaw motor of the robot.
+yawMotor = robot.getMotor("body yaw motor")
+yawMotor.setPosition(float('inf'))
+yawMotor.setVelocity(0.0)
+
+# Configuration of the head yaw motor of the robot.
+headMotor = robot.getMotor("head yaw motor")
+headMotor.setPosition(float('inf'))
+headMotor.setVelocity(0.0)
+
+# This is the amount of velocity decline threshold to change direction.
+velocityDecline = 1    
+
+pitchMotor.setVelocity(maxSpeed)    # First we go forward.
+
+highest_velocity = 0
+while robot.step(timestep) != -1:
+    # now = the current velocity of the robot
+    now = gyro.getValues()[0]
+    # If the velocity now is higher than the highest velocity 
+    # the robot will go straight forward
+    if now > highest_velocity:
+        highest_velocity = now
+        yawMotor.setVelocity(0)
+        headMotor.setVelocity(0)
+    # If the velocity now is lower than the highest velocity
+    # and the difference is higher than the threshold
+    # the robot will rotate
+    elif highest_velocity - now > velocityDecline:
+        yawMotor.setVelocity(1)
+        headMotor.setVelocity(1)
